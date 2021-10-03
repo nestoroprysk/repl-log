@@ -6,7 +6,7 @@ Replication log is a distributed systems course homework [assignment](https://do
 
 ```bash
     # use docker-compose
-    docker-compose up
+    docker-compose up --build
 
     # or tilt (for UI and live updates)
     tilt up

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/nestoroprysk/repl-log/config"
 	"github.com/nestoroprysk/repl-log/handler"
 	"github.com/nestoroprysk/repl-log/repository"
@@ -16,10 +18,6 @@ func main() {
 	router.GET("/messages", handler.GetMessages(r))
 	router.POST("/messages", handler.AppendMessage(r))
 
-	c, err := config.Make()
-	if err != nil {
-		panic(err)
-	}
-
+	c := config.T{Host: os.Getenv("HOST"), Port: os.Getenv("PORT")}
 	router.Run(c.Address())
 }
