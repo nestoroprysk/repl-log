@@ -15,10 +15,27 @@ Replication log is a distributed systems course homework [assignment](https://do
 # Using the App
 
 ```bash
-    # master
+    # ping master
     curl localhost:8080/ping
-    # secondary-1
+    # ping secondary-1
     curl localhost:8081/ping
-    # secondary-2
+    # ping secondary-2
     curl localhost:8082/ping
+
+    # post a message (master only)
+    curl -X POST -d '123' localhost:8080/messages
+
+    # list messages of master
+    curl localhost:8080/messages
+    # list messages of secondary-1
+    curl localhost:8081/messages
+    # list messages of secondary-2
+    curl localhost:8082/messages
 ```
+
+# Sources
+
+- [Golang installation](https://golang.org/doc/install)
+- [Using docker-compose with go](https://docs.docker.com/language/golang/build-images/)
+- [Tilt with docker-compose](https://docs.tilt.dev/docker_compose.html)
+- [Gin server](https://golang.org/doc/tutorial/web-service-gin)
