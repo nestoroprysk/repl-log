@@ -1,0 +1,16 @@
+FROM golang:1.17.1
+
+WORKDIR /app
+
+COPY . .
+
+EXPOSE 8080
+
+ENV HOST=0.0.0.0
+ENV PORT=8080
+
+RUN go mod download
+
+RUN go build -o /app/master cmd/master/main.go 
+
+CMD [ "/app/master" ]

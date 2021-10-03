@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	ping := func(c *gin.Context) { c.Writer.Write([]byte("pong")) }
+	ping := func(c *gin.Context) { c.Writer.Write([]byte("pong from master")) }
 
 	router := gin.Default()
 	router.GET("/ping", ping)

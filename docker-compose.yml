@@ -2,29 +2,17 @@
 version: "3.9"
 services:
   master:
-    image: golang:1.13
-    command: ["go", "run", "cmd/master/main.go"]
+    build:
+      context: .
+      dockerfile: Dockerfile.master
     ports: ["0.0.0.0:8080:8080"]
-    environment:
-      HOST: 0.0.0.0
-      PORT: 8080
-    working_dir: "/app"
-    volumes: ["./:/app"]
   secondary-1:
-    image: golang:1.13
-    command: ["go", "run", "cmd/secondary/main.go"]
+    build:
+      context: .
+      dockerfile: Dockerfile.secondary-1
     ports: ["0.0.0.0:8081:8081"]
-    environment:
-      HOST: 0.0.0.0
-      PORT: 8081
-    working_dir: "/app"
-    volumes: ["./:/app"]
   secondary-2:
-    image: golang:1.13
-    command: ["go", "run", "cmd/secondary/main.go"]
+    build:
+      context: .
+      dockerfile: Dockerfile.secondary-2
     ports: ["0.0.0.0:8082:8082"]
-    environment:
-      HOST: 0.0.0.0
-      PORT: 8082
-    working_dir: "/app"
-    volumes: ["./:/app"]
