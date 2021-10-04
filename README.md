@@ -5,11 +5,16 @@ Replication log is a distributed systems course homework [assignment](https://do
 # Running the App
 
 ```bash
-    # use docker-compose
-    docker-compose up --build
+    # tilt (for UI and live updates)
+    tilt up --hud=false
 
-    # or tilt (for UI and live updates)
-    tilt up
+    # or build images
+    docker build -f Dockerfile.master -t master .
+    docker build -f Dockerfile.secondary-1 -t secondary-1 .
+    docker build -f Dockerfile.secondary-2 -t secondary-2 .
+
+    # and use docker-compose
+    docker-compose up
 ```
 
 # Using the App

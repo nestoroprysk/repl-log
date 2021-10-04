@@ -2,17 +2,11 @@
 version: "3.9"
 services:
   master:
-    build:
-      context: .
-      dockerfile: Dockerfile.master
+    image: master
     ports: ["0.0.0.0:8080:8080"]
   secondary-1:
-    build:
-      context: .
-      dockerfile: Dockerfile.secondary-1
+    image: secondary-1
     ports: ["0.0.0.0:8081:8081"]
   secondary-2:
-    build:
-      context: .
-      dockerfile: Dockerfile.secondary-2
+    image: secondary-2
     ports: ["0.0.0.0:8082:8082"]
