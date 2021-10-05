@@ -3,6 +3,7 @@ package integration_test
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/nestoroprysk/repl-log/client"
 	"github.com/nestoroprysk/repl-log/config"
 	"github.com/nestoroprysk/repl-log/message"
@@ -17,6 +18,25 @@ func TestReplLog(t *testing.T) {
 }
 
 var _ = It("A sample message gets replicated", func() {
+	m, a, b, n := env() // TODO: Defer flush namespace
+
+	msg := message.T{Message: "1234", Namespace: n}
+	Expect(m.PostMessage(msg)).To(Succeed())
+
+	msgs, err := m.GetMessages(n)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(msgs).To(ConsistOf(msg))
+
+	msgs, err = a.GetMessages(n)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(msgs).To(ConsistOf(msg))
+
+	msgs, err = b.GetMessages(n)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(msgs).To(ConsistOf(msg))
+})
+
+func env() (*client.T, *client.T, *client.T, message.Namespace) {
 	m, err := client.New(config.Master)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -26,18 +46,8 @@ var _ = It("A sample message gets replicated", func() {
 	b, err := client.New(config.SecondaryB)
 	Expect(err).NotTo(HaveOccurred())
 
-	msg := message.T("1234")
-	Expect(m.PostMessage(msg)).To(Succeed())
-
-	msgs, err := m.GetMessages()
+	u, err := uuid.NewUUID()
 	Expect(err).NotTo(HaveOccurred())
-	Expect(msgs).To(ContainElement(msg))
 
-	msgs, err = a.GetMessages()
-	Expect(err).NotTo(HaveOccurred())
-	Expect(msgs).To(ContainElement(msg))
-
-	msgs, err = b.GetMessages()
-	Expect(err).NotTo(HaveOccurred())
-	Expect(msgs).To(ContainElement(msg))
-})
+	return m, a, b, message.Namespace(u.String())
+}

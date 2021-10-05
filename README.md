@@ -28,7 +28,7 @@ Replication log is a distributed systems course homework [assignment](https://do
     curl localhost:8082/ping
 
     # post a message (master only)
-    curl -X POST -d '123' localhost:8080/messages
+    curl -X POST -d '{"message":"abc"}' localhost:8080/messages
 
     # list messages of master
     curl localhost:8080/messages
@@ -36,6 +36,11 @@ Replication log is a distributed systems course homework [assignment](https://do
     curl localhost:8081/messages
     # list messages of secondary-2
     curl localhost:8082/messages
+
+    # namespaces
+    curl -X POST -d '{"message":"local","namespace":"ns"}' localhost:8080/messages
+    curl 'localhost:8080/messages?namespace=ns'
+    curl 'localhost:8080/messages?namespace=ns&namespace=default'
 ```
 
 # Running Tests

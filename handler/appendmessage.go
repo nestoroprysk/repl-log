@@ -2,7 +2,7 @@ package handler
 
 import (
 	"context"
-	"io/ioutil"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -18,13 +18,16 @@ type Option func(message.T) error
 
 func AppendMessage(r *repository.T, opts ...Option) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		b, err := ioutil.ReadAll(c.Request.Body)
-		if err != nil {
+		var m message.T
+		if err := json.NewDecoder(c.Request.Body).Decode(&m); err != nil {
 			http.Error(c.Writer, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		m := message.T(b)
+		if m.Namespace == "" {
+			m.Namespace = message.DefaultNamespace
+		}
+
 		r.AppendMessage(m)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

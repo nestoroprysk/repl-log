@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/nestoroprysk/repl-log/config"
@@ -30,27 +31,29 @@ func New(c config.T) (*T, error) {
 }
 
 func (t *T) Ping() error {
-	var m message.T
 	resp, err := t.SetRetryCount(10).
 		SetRetryWaitTime(1 * time.Second).
 		SetRetryMaxWaitTime(10 * time.Second).
-		R().SetResult(&m).Get(t.address + "/ping")
+		R().Get(t.address + "/ping")
 	if err != nil {
 		return err
 	}
 	if resp.StatusCode() != http.StatusOK {
 		return fmt.Errorf("expecting status OK, got: %s", resp.Status)
 	}
-	if m != message.T("pong") {
-		return fmt.Errorf("expecting pong, got: %s", m)
+	if resp.String() != "pong" {
+		return fmt.Errorf("expecting pong, got: %s", resp.String())
 	}
 
 	return nil
 }
 
-func (t *T) GetMessages() ([]message.T, error) {
+func (t *T) GetMessages(ns ...message.Namespace) ([]message.T, error) {
 	var result []message.T
-	resp, err := t.R().SetResult(&result).Get(t.address + "/messages")
+	resp, err := t.R().SetResult(&result).
+		SetQueryParamsFromValues(url.Values{
+			"namespace": toStrings(ns...),
+		}).Get(t.address + "/messages")
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +66,7 @@ func (t *T) GetMessages() ([]message.T, error) {
 
 func (t *T) PostMessage(m message.T) error {
 	var result message.T
-	resp, err := t.R().SetBody(m.Bytes()).SetResult(&result).Post(t.address + "/messages")
+	resp, err := t.R().SetBody(m).SetResult(&result).Post(t.address + "/messages")
 	if err != nil {
 		return err
 	}
@@ -75,4 +78,13 @@ func (t *T) PostMessage(m message.T) error {
 	}
 
 	return nil
+}
+
+func toStrings(ns ...message.Namespace) []string {
+	var result []string
+	for _, n := range ns {
+		result = append(result, string(n))
+	}
+
+	return result
 }

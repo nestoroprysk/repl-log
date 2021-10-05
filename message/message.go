@@ -1,7 +1,10 @@
 package message
 
-type T string
-
-func (t T) Bytes() []byte {
-	return []byte(t)
+type T struct {
+	Message   string `json:"message"`
+	Namespace `json:"namespace"`
 }
+
+type Namespace string
+
+var DefaultNamespace Namespace = "default"
