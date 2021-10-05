@@ -38,6 +38,13 @@ Replication log is a distributed systems course homework [assignment](https://do
     curl localhost:8082/messages
 ```
 
+# Running Tests
+
+```bash
+    # using the docker-compose (make sure that the service is up)
+    docker-compose run test
+```
+
 # Sources
 
 - [Golang installation](https://golang.org/doc/install)

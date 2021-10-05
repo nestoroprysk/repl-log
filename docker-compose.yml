@@ -10,3 +10,15 @@ services:
   secondary-2:
     image: secondary-2
     ports: ["0.0.0.0:8082:8082"]
+  test:
+    image: golang:1.17.1
+    command: ["go", "test", "./integration"]
+    working_dir: "/app"
+    volumes: ["./:/app"]
+    environment:
+      MASTER_HOST: master
+      MASTER_PORT: 8080
+      SECONDARY_1_HOST: secondary-1
+      SECONDARY_1_PORT: 8081
+      SECONDARY_2_HOST: secondary-2
+      SECONDARY_2_PORT: 8082
