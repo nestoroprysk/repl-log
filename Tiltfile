@@ -7,16 +7,15 @@ docker_build('master', '.', dockerfile='Dockerfile.master',
     restart_container()
   ])
 
-docker_build('secondary-1', '.', dockerfile='Dockerfile.secondary-1',
+docker_build('secondary', '.', dockerfile='Dockerfile.secondary',
   live_update = [
     sync('.', '/app'),
     run('go build -o /app/secondary cmd/secondary/main.go'),
     restart_container()
   ])
 
-docker_build('secondary-2', '.', dockerfile='Dockerfile.secondary-2',
+docker_build('test', '.', dockerfile='Dockerfile.test',
   live_update = [
     sync('.', '/app'),
-    run('go build -o /app/secondary cmd/secondary/main.go'),
     restart_container()
   ])

@@ -10,8 +10,7 @@ Replication log is a distributed systems course homework [assignment](https://do
 
     # or build images
     docker build -f Dockerfile.master -t master .
-    docker build -f Dockerfile.secondary-1 -t secondary-1 .
-    docker build -f Dockerfile.secondary-2 -t secondary-2 .
+    docker build -f Dockerfile.secondary -t secondary .
 
     # and use docker-compose
     docker-compose up

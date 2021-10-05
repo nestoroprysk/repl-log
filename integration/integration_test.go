@@ -1,7 +1,6 @@
 package integration_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/nestoroprysk/repl-log/client"
@@ -17,12 +16,12 @@ func TestReplLog(t *testing.T) {
 }
 
 var _ = It("Replication Log does the job", func() {
-	_, err := client.New(config.T{Host: os.Getenv("MASTER_HOST"), Port: os.Getenv("MASTER_PORT")})
+	_, err := client.New(config.Master)
 	Expect(err).NotTo(HaveOccurred())
 
-	_, err = client.New(config.T{Host: os.Getenv("SECONDARY_1_HOST"), Port: os.Getenv("SECONDARY_1_PORT")})
+	_, err = client.New(config.SecondaryA)
 	Expect(err).NotTo(HaveOccurred())
 
-	_, err = client.New(config.T{Host: os.Getenv("SECONDARY_2_HOST"), Port: os.Getenv("SECONDARY_2_PORT")})
+	_, err = client.New(config.SecondaryB)
 	Expect(err).NotTo(HaveOccurred())
 })

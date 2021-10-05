@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/nestoroprysk/repl-log/client"
 	"github.com/nestoroprysk/repl-log/config"
 	"github.com/nestoroprysk/repl-log/handler"
@@ -12,14 +10,12 @@ import (
 )
 
 func main() {
-	c := config.T{Host: os.Getenv("HOST"), Port: os.Getenv("PORT")}
-
-	a, err := client.New(config.T{Host: os.Getenv("SECONDARY_1_HOST"), Port: os.Getenv("SECONDARY_1_PORT")})
+	a, err := client.New(config.SecondaryA)
 	if err != nil {
 		panic(err)
 	}
 
-	b, err := client.New(config.T{Host: os.Getenv("SECONDARY_2_HOST"), Port: os.Getenv("SECONDARY_2_PORT")})
+	b, err := client.New(config.SecondaryB)
 	if err != nil {
 		panic(err)
 	}
@@ -34,5 +30,5 @@ func main() {
 		handler.Replicate(b),
 	))
 
-	router.Run(c.Address())
+	router.Run(config.Master.Address())
 }
