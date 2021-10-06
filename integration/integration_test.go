@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/google/uuid"
@@ -71,17 +72,40 @@ var _ = It("A sample message gets replicated", func() {
 	msg := message.T{Message: "1234", Namespace: n}
 	Expect(m.PostMessage(msg)).To(Succeed())
 
-	msgs, err := m.GetMessages(n)
-	Expect(err).NotTo(HaveOccurred())
-	Expect(msgs).To(ConsistOf(msg))
+	for _, c := range []*client.T{m, a, b} {
+		msgs, err := c.GetMessages(n)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(msgs).To(ConsistOf(msg))
+	}
+})
 
-	msgs, err = a.GetMessages(n)
-	Expect(err).NotTo(HaveOccurred())
-	Expect(msgs).To(ConsistOf(msg))
+var _ = It("Many messages get replicated and respect the order", func() {
+	m, a, b, n, clean := env()
+	defer clean()
 
-	msgs, err = b.GetMessages(n)
-	Expect(err).NotTo(HaveOccurred())
-	Expect(msgs).To(ConsistOf(msg))
+	var msgs []message.T
+	for i := 0; i < 100; i++ {
+		u, err := uuid.NewRandom()
+		Expect(err).NotTo(HaveOccurred())
+		msgs = append(msgs, message.T{Message: u.String(), Namespace: n})
+	}
+
+	var wg sync.WaitGroup
+	for _, _msg := range msgs {
+		wg.Add(1)
+		msg := _msg
+		go func() {
+			Expect(m.PostMessage(msg)).To(Succeed())
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+
+	for _, c := range []*client.T{m, a, b} {
+		result, err := c.GetMessages(n)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(result).To(Equal(msgs))
+	}
 })
 
 func env() (*client.T, *client.T, *client.T, message.Namespace, func()) {
@@ -94,7 +118,7 @@ func env() (*client.T, *client.T, *client.T, message.Namespace, func()) {
 	b, err := client.New(config.SecondaryB)
 	Expect(err).NotTo(HaveOccurred())
 
-	u, err := uuid.NewUUID()
+	u, err := uuid.NewRandom()
 	Expect(err).NotTo(HaveOccurred())
 
 	n := message.Namespace(u.String())
