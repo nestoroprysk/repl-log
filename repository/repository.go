@@ -8,12 +8,17 @@ import (
 
 type T struct {
 	sync.RWMutex
-	messages map[message.Namespace][]message.T
+	messages   map[message.Namespace][]message.T
+	namespaces map[message.Namespace]bool
 }
 
 func New() *T {
-	result := &T{messages: map[message.Namespace][]message.T{}}
-	return result
+	return &T{
+		messages: map[message.Namespace][]message.T{},
+		namespaces: map[message.Namespace]bool{
+			message.DefaultNamespace: true,
+		},
+	}
 }
 
 func (t *T) GetMessages(ns ...message.Namespace) []message.T {
@@ -33,6 +38,18 @@ func (t *T) GetMessages(ns ...message.Namespace) []message.T {
 	return result
 }
 
+func (t *T) GetNamespaces() []message.Namespace {
+	t.RLock()
+	defer t.RUnlock()
+
+	var result []message.Namespace
+	for n := range t.namespaces {
+		result = append(result, n)
+	}
+
+	return result
+}
+
 func (t *T) AppendMessage(m message.T) message.T {
 	t.Lock()
 	defer t.Unlock()
@@ -41,6 +58,7 @@ func (t *T) AppendMessage(m message.T) message.T {
 		m.Namespace = message.DefaultNamespace
 	}
 
+	t.namespaces[m.Namespace] = true
 	t.messages[m.Namespace] = append(t.messages[m.Namespace], m)
 	return m
 }

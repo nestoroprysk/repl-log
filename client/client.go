@@ -48,6 +48,19 @@ func (t *T) Ping() error {
 	return nil
 }
 
+func (t *T) GetNamespaces() ([]message.Namespace, error) {
+	var result []message.Namespace
+	resp, err := t.R().SetResult(&result).Get(t.address + "/namespaces")
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("expecting status OK, got: %s", resp.StatusCode())
+	}
+
+	return result, nil
+}
+
 func (t *T) GetMessages(ns ...message.Namespace) ([]message.T, error) {
 	var result []message.T
 	resp, err := t.R().SetResult(&result).

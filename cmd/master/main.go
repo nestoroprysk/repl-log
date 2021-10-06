@@ -29,6 +29,7 @@ func main() {
 		handler.Replicate(a),
 		handler.Replicate(b),
 	))
+	router.GET("/namespaces", handler.GetNamespaces(r))
 
 	router.Run(config.Master.Address())
 }

@@ -17,6 +17,17 @@ func TestReplLog(t *testing.T) {
 	RunSpecs(t, "Replication Log App Suite")
 }
 
+var _ = It("Namespaces get listed", func() {
+	m, _, _, n := env() // TODO: Defer flush namespace
+
+	msg := message.T{Message: "1234", Namespace: n}
+	Expect(m.PostMessage(msg)).To(Succeed())
+
+	ns, err := m.GetNamespaces()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(ns).To(ContainElements(message.DefaultNamespace, n))
+})
+
 var _ = It("A sample message gets replicated", func() {
 	m, a, b, n := env() // TODO: Defer flush namespace
 
