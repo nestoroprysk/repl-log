@@ -8,3 +8,5 @@ type T struct {
 type Namespace string
 
 var DefaultNamespace Namespace = "default"
+
+const NamespaceID = "id"

@@ -93,6 +93,22 @@ func (t *T) PostMessage(m message.T) error {
 	return nil
 }
 
+func (t *T) DeleteNamespace(n message.Namespace) (bool, error) {
+	resp, err := t.R().Delete(t.address + fmt.Sprintf("/namespaces/%s", n))
+	if err != nil {
+		return false, err
+	}
+
+	if resp.StatusCode() == http.StatusOK {
+		return true, nil
+	}
+	if resp.StatusCode() == http.StatusNoContent {
+		return false, nil
+	}
+
+	return false, fmt.Errorf("unexpected status code %s", resp.StatusCode())
+}
+
 func toStrings(ns ...message.Namespace) []string {
 	var result []string
 	for _, n := range ns {

@@ -50,6 +50,20 @@ func (t *T) GetNamespaces() []message.Namespace {
 	return result
 }
 
+func (t *T) DeleteNamespace(n message.Namespace) bool {
+	t.Lock()
+	defer t.Unlock()
+
+	if t.namespaces[n] == false {
+		return false
+	}
+
+	delete(t.namespaces, n)
+	delete(t.messages, n)
+
+	return true
+}
+
 func (t *T) AppendMessage(m message.T) message.T {
 	t.Lock()
 	defer t.Unlock()

@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/nestoroprysk/repl-log/client"
 	"github.com/nestoroprysk/repl-log/config"
 	"github.com/nestoroprysk/repl-log/handler"
+	"github.com/nestoroprysk/repl-log/message"
 	"github.com/nestoroprysk/repl-log/repository"
 
 	"github.com/gin-gonic/gin"
@@ -30,6 +33,10 @@ func main() {
 		handler.Replicate(b),
 	))
 	router.GET("/namespaces", handler.GetNamespaces(r))
+	router.DELETE(fmt.Sprintf("/namespaces/:%s", message.NamespaceID), handler.DeleteNamespace(r,
+		handler.ReplicateNamespace(a),
+		handler.ReplicateNamespace(b),
+	))
 
 	router.Run(config.Master.Address())
 }

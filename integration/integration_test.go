@@ -18,7 +18,8 @@ func TestReplLog(t *testing.T) {
 }
 
 var _ = It("Namespaces get listed", func() {
-	m, _, _, n := env() // TODO: Defer flush namespace
+	m, _, _, n, clean := env()
+	defer clean()
 
 	msg := message.T{Message: "1234", Namespace: n}
 	Expect(m.PostMessage(msg)).To(Succeed())
@@ -28,8 +29,44 @@ var _ = It("Namespaces get listed", func() {
 	Expect(ns).To(ContainElements(message.DefaultNamespace, n))
 })
 
+var _ = It("Deleting a namespace deletes all the related messages", func() {
+	m, a, b, n, clean := env()
+	defer clean()
+
+	msg := message.T{Message: "1234", Namespace: n}
+	Expect(m.PostMessage(msg)).To(Succeed())
+
+	ns, err := m.GetNamespaces()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(ns).To(ContainElements(message.DefaultNamespace, n))
+
+	ok, err := m.DeleteNamespace(n)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(ok).To(BeTrue())
+
+	for _, c := range []*client.T{m, a, b} {
+		ns, err = c.GetNamespaces()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(ns).NotTo(ContainElements(n))
+
+		ms, err := m.GetMessages(n)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(ms).To(BeEmpty())
+	}
+})
+
+var _ = It("Deleting a namespace that doesn't exist returns false", func() {
+	m, _, _, n, clean := env()
+	defer clean()
+
+	ok, err := m.DeleteNamespace(n + "1234")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(ok).To(BeFalse())
+})
+
 var _ = It("A sample message gets replicated", func() {
-	m, a, b, n := env() // TODO: Defer flush namespace
+	m, a, b, n, clean := env()
+	defer clean()
 
 	msg := message.T{Message: "1234", Namespace: n}
 	Expect(m.PostMessage(msg)).To(Succeed())
@@ -47,7 +84,7 @@ var _ = It("A sample message gets replicated", func() {
 	Expect(msgs).To(ConsistOf(msg))
 })
 
-func env() (*client.T, *client.T, *client.T, message.Namespace) {
+func env() (*client.T, *client.T, *client.T, message.Namespace, func()) {
 	m, err := client.New(config.Master)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -60,5 +97,12 @@ func env() (*client.T, *client.T, *client.T, message.Namespace) {
 	u, err := uuid.NewUUID()
 	Expect(err).NotTo(HaveOccurred())
 
-	return m, a, b, message.Namespace(u.String())
+	n := message.Namespace(u.String())
+
+	clean := func() {
+		_, err := m.DeleteNamespace(n)
+		Expect(err).NotTo(HaveOccurred())
+	}
+
+	return m, a, b, n, clean
 }
