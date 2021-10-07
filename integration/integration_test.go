@@ -8,10 +8,20 @@ import (
 	"github.com/nestoroprysk/repl-log/client"
 	"github.com/nestoroprysk/repl-log/config"
 	"github.com/nestoroprysk/repl-log/message"
+	"github.com/nestoroprysk/repl-log/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+var testConfig config.Config
+
+var _ = BeforeSuite(func() {
+	c, err := config.Read()
+	Expect(err).NotTo(HaveOccurred())
+
+	testConfig = c
+})
 
 func TestReplLog(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -19,7 +29,7 @@ func TestReplLog(t *testing.T) {
 }
 
 var _ = It("Namespaces get listed", func() {
-	m, _, _, n, clean := env()
+	m, _, n, clean := env()
 	defer clean()
 
 	msg := message.T{Message: "1234", Namespace: n}
@@ -31,7 +41,7 @@ var _ = It("Namespaces get listed", func() {
 })
 
 var _ = It("Deleting a namespace deletes all the related messages", func() {
-	m, a, b, n, clean := env()
+	m, ss, n, clean := env()
 	defer clean()
 
 	msg := message.T{Message: "1234", Namespace: n}
@@ -45,7 +55,7 @@ var _ = It("Deleting a namespace deletes all the related messages", func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(ok).To(BeTrue())
 
-	for _, c := range []*client.T{m, a, b} {
+	for _, c := range append(ss, m) {
 		ns, err = c.GetNamespaces()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(ns).NotTo(ContainElements(n))
@@ -57,7 +67,7 @@ var _ = It("Deleting a namespace deletes all the related messages", func() {
 })
 
 var _ = It("Deleting a namespace that doesn't exist returns false", func() {
-	m, _, _, n, clean := env()
+	m, _, n, clean := env()
 	defer clean()
 
 	ok, err := m.DeleteNamespace(n + "1234")
@@ -66,13 +76,13 @@ var _ = It("Deleting a namespace that doesn't exist returns false", func() {
 })
 
 var _ = It("A sample message gets replicated", func() {
-	m, a, b, n, clean := env()
+	m, ss, n, clean := env()
 	defer clean()
 
 	msg := message.T{Message: "1234", Namespace: n}
 	Expect(m.PostMessage(msg)).To(Succeed())
 
-	for _, c := range []*client.T{m, a, b} {
+	for _, c := range append(ss, m) {
 		msgs, err := c.GetMessages(n)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(msgs).To(ConsistOf(msg))
@@ -80,7 +90,7 @@ var _ = It("A sample message gets replicated", func() {
 })
 
 var _ = It("Many messages get replicated and respect the order", func() {
-	m, a, b, n, clean := env()
+	m, ss, n, clean := env()
 	defer clean()
 
 	var msgs []message.T
@@ -101,21 +111,18 @@ var _ = It("Many messages get replicated and respect the order", func() {
 	}
 	wg.Wait()
 
-	for _, c := range []*client.T{m, a, b} {
+	for _, c := range append(ss, m) {
 		result, err := c.GetMessages(n)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(result).To(Equal(msgs))
 	}
 })
 
-func env() (*client.T, *client.T, *client.T, message.Namespace, func()) {
-	m, err := client.New(config.Master)
+func env() (*client.T, []*client.T, message.Namespace, func()) {
+	m, err := client.New(testConfig.Listen)
 	Expect(err).NotTo(HaveOccurred())
 
-	a, err := client.New(config.SecondaryA)
-	Expect(err).NotTo(HaveOccurred())
-
-	b, err := client.New(config.SecondaryB)
+	ss, err := util.ToClients(testConfig.Replicate)
 	Expect(err).NotTo(HaveOccurred())
 
 	u, err := uuid.NewRandom()
@@ -128,5 +135,5 @@ func env() (*client.T, *client.T, *client.T, message.Namespace, func()) {
 		Expect(err).NotTo(HaveOccurred())
 	}
 
-	return m, a, b, n, clean
+	return m, ss, n, clean
 }

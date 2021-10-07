@@ -6,4 +6,6 @@ COPY . .
 
 RUN go mod download
 
-CMD [ "go", "test", "/app/integration" ]
+RUN go build
+
+CMD [ "/app/repl-log" ]

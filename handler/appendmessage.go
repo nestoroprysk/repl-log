@@ -14,9 +14,7 @@ import (
 	"github.com/nestoroprysk/repl-log/repository"
 )
 
-type Option func(message.T) error
-
-func AppendMessage(r *repository.T, opts ...Option) func(c *gin.Context) {
+func AppendMessage(r *repository.T, replicas ...*client.T) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var m message.T
 		if err := json.NewDecoder(c.Request.Body).Decode(&m); err != nil {
@@ -34,10 +32,10 @@ func AppendMessage(r *repository.T, opts ...Option) func(c *gin.Context) {
 		defer cancel()
 
 		errs, ctx := errgroup.WithContext(ctx)
-		for _, opt := range opts {
-			o := opt
+		for _, _rep := range replicas {
+			rep := _rep
 			errs.Go(func() error {
-				return o(m)
+				return rep.PostMessage(m)
 			})
 		}
 
@@ -47,11 +45,5 @@ func AppendMessage(r *repository.T, opts ...Option) func(c *gin.Context) {
 		}
 
 		c.IndentedJSON(http.StatusCreated, m)
-	}
-}
-
-func Replicate(c *client.T) Option {
-	return func(m message.T) error {
-		return c.PostMessage(m)
 	}
 }

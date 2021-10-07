@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/nestoroprysk/repl-log/config"
 	"github.com/nestoroprysk/repl-log/message"
@@ -17,7 +16,7 @@ type T struct {
 	address string
 }
 
-func New(c config.T) (*T, error) {
+func New(c config.Location) (*T, error) {
 	result := &T{
 		Client:  resty.New(),
 		address: "http://" + c.Address(),
@@ -31,10 +30,7 @@ func New(c config.T) (*T, error) {
 }
 
 func (t *T) Ping() error {
-	resp, err := t.SetRetryCount(10).
-		SetRetryWaitTime(1 * time.Second).
-		SetRetryMaxWaitTime(10 * time.Second).
-		R().Get(t.address + "/ping")
+	resp, err := t.R().Get(t.address + "/ping")
 	if err != nil {
 		return err
 	}

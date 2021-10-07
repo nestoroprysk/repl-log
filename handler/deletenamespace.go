@@ -13,9 +13,7 @@ import (
 	"github.com/nestoroprysk/repl-log/repository"
 )
 
-type NamespaceOption func(message.Namespace) error
-
-func DeleteNamespace(r *repository.T, opts ...NamespaceOption) func(c *gin.Context) {
+func DeleteNamespace(r *repository.T, replicas ...*client.T) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		n := message.Namespace(c.Params.ByName(message.NamespaceID))
 
@@ -28,10 +26,11 @@ func DeleteNamespace(r *repository.T, opts ...NamespaceOption) func(c *gin.Conte
 		defer cancel()
 
 		errs, ctx := errgroup.WithContext(ctx)
-		for _, opt := range opts {
-			o := opt
+		for _, _rep := range replicas {
+			rep := _rep
 			errs.Go(func() error {
-				return o(n)
+				_, err := rep.DeleteNamespace(n)
+				return err
 			})
 		}
 
@@ -41,12 +40,5 @@ func DeleteNamespace(r *repository.T, opts ...NamespaceOption) func(c *gin.Conte
 		}
 
 		c.Writer.WriteHeader(http.StatusOK)
-	}
-}
-
-func ReplicateNamespace(c *client.T) NamespaceOption {
-	return func(n message.Namespace) error {
-		_, err := c.DeleteNamespace(n)
-		return err
 	}
 }

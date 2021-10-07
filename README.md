@@ -9,8 +9,7 @@ Replication log is a distributed systems course homework [assignment](https://do
     tilt up --hud=false
 
     # or build images
-    docker build -f Dockerfile.master -t master .
-    docker build -f Dockerfile.secondary -t secondary .
+    docker build -f Dockerfile -t node .
     docker build -f Dockerfile.test -t test .
 
     # and use docker-compose
@@ -51,6 +50,9 @@ Replication log is a distributed systems course homework [assignment](https://do
 ```bash
     # using the docker-compose (make sure that the service is up)
     docker-compose run test
+
+    # or locally
+    CONFIG_PATH=$(pwd)/test-local.json go test ./integration
 ```
 
 # Sources

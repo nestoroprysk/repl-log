@@ -1,0 +1,6 @@
+{
+    "listen": {
+        "host": "secondary-1",
+        "port": 8081
+    }
+}
