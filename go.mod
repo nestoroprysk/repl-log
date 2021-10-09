@@ -3,6 +3,7 @@ module github.com/nestoroprysk/repl-log
 go 1.17
 
 require (
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/google/uuid v1.3.0

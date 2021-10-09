@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/nestoroprysk/repl-log/config"
 	"github.com/nestoroprysk/repl-log/message"
 
+	"github.com/avast/retry-go"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -22,7 +24,9 @@ func New(c config.Location) (*T, error) {
 		address: "http://" + c.Address(),
 	}
 
-	if err := result.Ping(); err != nil {
+	if err := retry.Do(func() error {
+		return result.Ping()
+	}, retry.Delay(time.Second)); err != nil {
 		return nil, err
 	}
 
