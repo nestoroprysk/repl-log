@@ -86,6 +86,9 @@ func (t *T) PostMessage(m message.T) error {
 	if resp.StatusCode() != http.StatusCreated {
 		return fmt.Errorf("expecting status created, got: %s", resp.StatusCode())
 	}
+	if m.ID == 0 {
+		m.ID = result.ID
+	}
 	if result != m {
 		return fmt.Errorf("expecting the sent message %v, got: %v", m, resp)
 	}

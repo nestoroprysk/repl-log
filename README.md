@@ -6,7 +6,7 @@ Replication log is a distributed systems course homework [assignment](https://do
 
 ```bash
     # tilt (for UI and live updates)
-    tilt up --hud=false
+    tilt up
 
     # or build images
     docker build -f Dockerfile -t node .

@@ -85,11 +85,12 @@ var _ = It("A sample message gets replicated", func() {
 	for _, c := range append(ss, m) {
 		msgs, err := c.GetMessages(n)
 		Expect(err).NotTo(HaveOccurred())
+		msgs = ignoreIDs(msgs)
 		Expect(msgs).To(ConsistOf(msg))
 	}
 })
 
-var _ = It("Many messages get replicated and respect the order", func() {
+var _ = It("Many messages get replicated and all the nodes respect the order", func() {
 	m, ss, n, clean := env()
 	defer clean()
 
@@ -105,16 +106,23 @@ var _ = It("Many messages get replicated and respect the order", func() {
 		wg.Add(1)
 		msg := _msg
 		go func() {
+			defer wg.Done()
+			defer GinkgoRecover()
 			Expect(m.PostMessage(msg)).To(Succeed())
-			wg.Done()
 		}()
 	}
 	wg.Wait()
 
+	expected, err := m.GetMessages(n)
+	Expect(err).NotTo(HaveOccurred())
+	expected = ignoreIDs(expected)
+	Expect(expected).To(ConsistOf(msgs))
+
 	for _, c := range append(ss, m) {
 		result, err := c.GetMessages(n)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(result).To(Equal(msgs))
+		result = ignoreIDs(result)
+		Expect(result).To(Equal(expected))
 	}
 })
 
@@ -136,4 +144,14 @@ func env() (*client.T, []*client.T, message.Namespace, func()) {
 	}
 
 	return m, ss, n, clean
+}
+
+func ignoreIDs(ms []message.T) []message.T {
+	var result []message.T
+	for _, m := range ms {
+		m.ID = 0
+		result = append(result, m)
+	}
+
+	return result
 }

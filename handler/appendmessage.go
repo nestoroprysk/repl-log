@@ -26,6 +26,10 @@ func AppendMessage(r *repository.T, replicas ...*client.T) func(c *gin.Context) 
 			m.Namespace = message.DefaultNamespace
 		}
 
+		if m.ID == 0 {
+			m.ID = message.NextID()
+		}
+
 		r.AppendMessage(m)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"sort"
 	"sync"
 
 	"github.com/nestoroprysk/repl-log/message"
@@ -73,6 +74,14 @@ func (t *T) AppendMessage(m message.T) message.T {
 	}
 
 	t.namespaces[m.Namespace] = true
-	t.messages[m.Namespace] = append(t.messages[m.Namespace], m)
+	t.messages[m.Namespace] = insertSorted(t.messages[m.Namespace], m)
 	return m
+}
+
+func insertSorted(ms []message.T, m message.T) []message.T {
+	i := sort.Search(len(ms), func(i int) bool { return ms[i].ID >= m.ID })
+	ms = append(ms, message.T{})
+	copy(ms[i+1:], ms[i:])
+	ms[i] = m
+	return ms
 }
