@@ -3,6 +3,7 @@ package integration_test
 import (
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/nestoroprysk/repl-log/client"
@@ -90,6 +91,24 @@ var _ = It("A sample message gets replicated", func() {
 	}
 })
 
+var _ = It("A delay is respected", func() {
+	m, ss, n, clean := env()
+	defer clean()
+
+	var halfSecond uint32 = 500
+	msg := message.T{Message: "1234", Namespace: n, Delay: halfSecond}
+	takesAtLeast(func() {
+		Expect(m.PostMessage(msg)).To(Succeed())
+	}, 500*time.Millisecond)
+
+	for _, c := range append(ss, m) {
+		msgs, err := c.GetMessages(n)
+		Expect(err).NotTo(HaveOccurred())
+		msgs = ignoreIDs(msgs)
+		Expect(msgs).To(ConsistOf(msg))
+	}
+})
+
 var _ = It("Many messages get replicated and all the nodes respect the order", func() {
 	m, ss, n, clean := env()
 	defer clean()
@@ -154,4 +173,10 @@ func ignoreIDs(ms []message.T) []message.T {
 	}
 
 	return result
+}
+func takesAtLeast(f func(), t time.Duration) {
+	begin := time.Now()
+	f()
+	end := time.Now()
+	Expect(end).To(BeTemporally(">", begin.Add(t)), "Execution didn't take long enough")
 }

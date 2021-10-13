@@ -6,6 +6,8 @@ type T struct {
 	Message   string `json:"message"`
 	Namespace `json:"namespace"`
 	ID        uint32 `json:"id"`
+	// Delay in milliseconds.
+	Delay uint32 `json:"delay"`
 }
 
 type Namespace string

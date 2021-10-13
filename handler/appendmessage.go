@@ -30,6 +30,11 @@ func AppendMessage(r *repository.T, replicas ...*client.T) func(c *gin.Context) 
 			m.ID = message.NextID()
 		}
 
+		isMaster := len(replicas) != 0
+		if !isMaster && m.Delay != 0 {
+			time.Sleep(time.Duration(m.Delay) * time.Millisecond)
+		}
+
 		r.AppendMessage(m)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

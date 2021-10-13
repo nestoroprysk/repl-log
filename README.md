@@ -43,6 +43,9 @@ Replication log is a distributed systems course homework [assignment](https://do
     curl 'localhost:8080/messages?namespace=ns&namespace=default'
     # flush all the messages inside the namespace
     curl -X DELETE localhost:8080/namespaces/ns
+
+    # post a message with a 5 second delay (secondaries reply with the delay)
+    curl -X POST -d '{"message":"abc","delay":1000}' localhost:8080/messages
 ```
 
 # Running Tests
